@@ -1,56 +1,55 @@
 import { createReadStream } from 'node:fs'
 
-import { FastifyInstance } from "fastify";
-import { z } from "zod";
+import { FastifyInstance } from 'fastify'
+import { z } from 'zod'
 
-import { prisma } from "../lib/prisma";
+import { prisma } from '../lib/prisma'
 import { openai } from '../lib/openai'
 
 export async function createTranscriptionRoutes(app: FastifyInstance) {
-  app.post('/videos/:videoId/transcription', async (request, reply) => {
+  app.post('/videos/:videoId/transcription', async (request) => {
     const paramsSchema = z.object({
-      videoId: z.string().uuid()
+      videoId: z.string().uuid(),
     })
 
     const bodySchema = z.object({
-      prompt: z.string()
+      prompt: z.string(),
     })
 
-   const { videoId } = paramsSchema.parse(request.params)
-   const { prompt } = bodySchema.parse(request.body)
+    const { videoId } = paramsSchema.parse(request.params)
+    const { prompt } = bodySchema.parse(request.body)
 
-   const video = await prisma.video.findUniqueOrThrow({
-    where: {
-      id: videoId
+    const video = await prisma.video.findUniqueOrThrow({
+      where: {
+        id: videoId,
+      },
+    })
+
+    const videoPath = video.path
+    const audioReadStream = createReadStream(videoPath)
+
+    const response = await openai.audio.transcriptions.create({
+      file: audioReadStream,
+      model: 'whisper-1',
+      language: 'pt',
+      response_format: 'json',
+      temperature: 0,
+      prompt,
+    })
+
+    const transcription = response.text
+
+    await prisma.video.update({
+      where: {
+        id: videoId,
+      },
+      data: {
+        transcription,
+      },
+    })
+
+    return {
+      transcription,
     }
-   })
-
-   const videoPath = video.path
-   const audioReadStream = createReadStream(videoPath)
-
-   const response = await openai.audio.transcriptions.create({
-    file: audioReadStream,
-    model: 'whisper-1',
-    language: 'pt',
-    response_format: 'json',
-    temperature: 0,
-    prompt
-   })
-
-   const transcription = response.text
-
-
-   await prisma.video.update({
-    where: {
-      id: videoId,
-    },
-    data: {
-      transcription
-    }
-   })
-
-   return {
-    transcription
-   }
   })
 }
