@@ -1,2 +1,35 @@
-# @name HELLO-WORD
-GET http://localhost:1313/
+# @name LIST-PROMPTS
+GET http://localhost:1313/prompt
+
+###
+# @name UPLOAD-VIDEOS
+POST  http://localhost:1313/videos
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="example.mp3"
+Content-Type: audio/mpeg
+
+< ./example.mp3
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+# @name CREATE-NEW-TRANSCRIPTION
+POST  http://localhost:1313/videos/161077a2-bd4a-4cbf-8f0c-8a7091f80639/transcription
+Content-Type: application/json
+
+{
+  "prompt": "nextjs, javascript, SWR, axios"
+}
+
+###
+# @name GENERATE-AI-COMPLETION
+POST  http://localhost:1313/ai/generate
+Content-Type: application/json
+
+{
+  "videoId": "161077a2-bd4a-4cbf-8f0c-8a7091f80639",
+  "template": "Gere um resumo sucinto da transcrição do video informada a seguir: '''{ transcription }'''",
+  "temperature": 0.5
+}
+
