@@ -28,8 +28,8 @@ POST  http://localhost:1313/ai/generate
 Content-Type: application/json
 
 {
-  "videoId": "161077a2-bd4a-4cbf-8f0c-8a7091f80639",
-  "template": "Gere um resumo sucinto da transcrição do video informada a seguir: '''{ transcription }'''",
+  "videoId": "83cc495b-f854-472f-b096-31b798d962a2",
+  "prompt": "Gere um resumo sucinto da transcrição do video informada a seguir: '''{ transcription }'''",
   "temperature": 0.5
 }
 
